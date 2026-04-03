@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/pwm.h"
+// Disclaimer: I have no experience in c and used AI heavily to write this assignment.
+// I will hopefully learn c quickly throughout this class and will use AI less and less
+// throughout the quarter.
 
 // Servo output pin (adjust as needed)
 #define SERVO_GPIO 15
