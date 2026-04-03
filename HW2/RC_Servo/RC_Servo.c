@@ -9,8 +9,8 @@
 #define SERVO_FREQ_HZ 50
 
 // Pulse width range in microseconds (common 0.5ms - 2.5ms for 0..180 deg)
-#define SERVO_MIN_US 750
-#define SERVO_MAX_US 2250
+#define SERVO_MIN_US 500
+#define SERVO_MAX_US 2500
 
 // Initialize servo PWM on a given GPIO
 static void servo_pwm_init(uint gpio)
