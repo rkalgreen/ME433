@@ -55,7 +55,7 @@ target_include_directories(RC_Servo PRIVATE
 
 # Add any user requested libraries
 target_link_libraries(RC_Servo 
-        
+        hardware_pwm
         )
 
 pico_add_extra_outputs(RC_Servo)
