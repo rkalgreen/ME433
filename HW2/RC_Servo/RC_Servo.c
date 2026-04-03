@@ -4,15 +4,13 @@
 
 // Servo output pin (adjust as needed)
 #define SERVO_GPIO 15
-// Servo power pin
-#define SERVO_POWER_GPIO 14
 
 // Standard 50Hz for analog RC servos
 #define SERVO_FREQ_HZ 50
 
 // Pulse width range in microseconds (common 0.5ms - 2.5ms for 0..180 deg)
-#define SERVO_MIN_US 1000
-#define SERVO_MAX_US 2000
+#define SERVO_MIN_US 750
+#define SERVO_MAX_US 2250
 
 // Initialize servo PWM on a given GPIO
 static void servo_pwm_init(uint gpio)
@@ -47,20 +45,15 @@ int main()
 {
     stdio_init_all();
 
-    // Hold servo power pin high to VUSB
-    gpio_init(SERVO_POWER_GPIO);
-    gpio_set_dir(SERVO_POWER_GPIO, GPIO_OUT);
-    gpio_put(SERVO_POWER_GPIO, 1);
-
     servo_pwm_init(SERVO_GPIO);
 
     while (true) {
         // Sweep servo 0..180
-        for (float a = 10.0f; a <= 170.0f; a += 1.0f) {
+        for (float a = 0.0f; a <= 180.0f; a += 1.0f) {
             servo_set_angle(SERVO_GPIO, a);
             sleep_ms(15);
         }
-        for (float a = 170.0f; a >= 10.0f; a -= 1.0f) {
+        for (float a = 180.0f; a >= 0.0f; a -= 1.0f) {
             servo_set_angle(SERVO_GPIO, a);
             sleep_ms(15);
         }
