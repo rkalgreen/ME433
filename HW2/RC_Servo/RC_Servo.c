@@ -56,11 +56,11 @@ int main()
 
     while (true) {
         // Sweep servo 0..180
-        for (float a = 0.0f; a <= 180.0f; a += 1.0f) {
+        for (float a = 10.0f; a <= 170.0f; a += 1.0f) {
             servo_set_angle(SERVO_GPIO, a);
             sleep_ms(15);
         }
-        for (float a = 180.0f; a >= 0.0f; a -= 1.0f) {
+        for (float a = 170.0f; a >= 10.0f; a -= 1.0f) {
             servo_set_angle(SERVO_GPIO, a);
             sleep_ms(15);
         }
