@@ -2,8 +2,8 @@ import time
 import pwmio
 
 # Servo constants (microseconds)
-MIN_PULSE = 1000
-MAX_PULSE = 2000
+MIN_PULSE = 500
+MAX_PULSE = 2500
 PERIOD_US = 20000  # 20ms = 20000us
 
 def angle_to_duty(angle):
@@ -26,17 +26,18 @@ def sweep_servo(pin, start_angle=0, end_angle=180, step=1, delay=0.01):
     """
     # Initialize PWM
     pwm = pwmio.PWMOut(pin, frequency=50)
+    while True:
+        # Sweep from start to end
+        for angle in range(start_angle, end_angle + step, step):
+            pwm.duty_cycle = angle_to_duty(angle)
+            time.sleep(delay)
 
-    # Sweep from start to end
-    for angle in range(start_angle, end_angle + step, step):
-        pwm.duty_cycle = angle_to_duty(angle)
-        time.sleep(delay)
-
-    # Sweep back from end to start
-    for angle in range(end_angle, start_angle - step, -step):
-        pwm.duty_cycle = angle_to_duty(angle)
-        time.sleep(delay)
+        # Sweep back from end to start
+        for angle in range(end_angle, start_angle - step, -step):
+            pwm.duty_cycle = angle_to_duty(angle)
+            time.sleep(delay) 
 
 # Example usage (uncomment to test)
 import board
-sweep_servo(board.D15)  # Assuming servo on D15
+sweep_servo(board.GP15)  #servo signal on GP15
+ 
