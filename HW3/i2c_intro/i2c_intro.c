@@ -58,8 +58,8 @@ int main()
 
     // assigning gpio button input
     char buttonReg = 0x09; // GPIO register
-    unsigned int buttonBitpos = 8; // GP0 is the eigth bit in the return
-    unsigned int buttonMask = 0x01; //GP0 is the button input
+    unsigned int buttonBitpos = 0; // GP0 is the 0 bit in the return
+    unsigned int buttonMask = 1 << buttonBitpos; // GP0 is the button input
 
     // while (true) {
     //     // printf("Hello, world!\n");
@@ -72,20 +72,30 @@ int main()
     //     sleep_ms(1000);
     // }
 
-    while (true) {
+    while (true) {        
+        // onboard heartbeat LED
+        static int led_state = 0;
+        static int heartbeat_counter = 0;
+        heartbeat_counter++;
+        if (heartbeat_counter >= 5) {
+            led_state = !led_state;
+            cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, led_state);
+            heartbeat_counter = 0;
+        }
+        
+
+
         char buttonState = readPin(ADDR, buttonReg);
-        printf("Raw button state: %d\n", buttonState);
+        // printf("Raw button state: %d\n", buttonState);
         buttonState = (buttonState & buttonMask) >> buttonBitpos;
         printf("Button state: %d\n", buttonState);
-        if (buttonState) {
+        if (buttonState == 0) {
             printf("Button Pressed!\n");
             setPin(ADDR, outReg, onValue); // turn on LED
-            
-        }
-        else {
+        } else {
             setPin(ADDR, outReg, offValue); // turn off LED
         }
-
-        
+        buttonState = 1; // reset button state variable
+        sleep_ms(10); 
     }
 }
