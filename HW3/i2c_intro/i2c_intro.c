@@ -47,17 +47,23 @@ int main()
     // Setting up the MCP23008 I/O expander
     // assigning I/O direction on the expander
     uint8_t ADDR = 0x20; // all adress pins grounded
-    char IOdef[2] = {0x00, 0x7F}; // GP7 out, all others in
-    i2c_write_blocking(I2C_PORT, ADDR, IOdef, 2, false);
+    char IOreg = 0x00; // IODIR register
+    char config = 0x7F; //GP7 out, all others in
+    setPin(ADDR, IOreg, config);
 
-    // 
+    // assigning output pin and values
+    char outReg = 0x0A; // OLAT register
+    char onValue = 0x80; // GP7 high
+    char offValue = 0x00; // GP7 low
 
     while (true) {
         // printf("Hello, world!\n");
         cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
+        setPin(ADDR, outReg, onValue);
         sleep_ms(1000);
         
         cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
+        setPin(ADDR, outReg, offValue);
         sleep_ms(1000);
 
         
