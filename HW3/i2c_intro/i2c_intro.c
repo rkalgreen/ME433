@@ -33,14 +33,20 @@ int main()
     gpio_pull_up(I2C_SCL);
     // For more examples of I2C use see https://github.com/raspberrypi/pico-examples/tree/master/i2c
 
-    // Example to blink the Pico W LED and print to serial monitor
+    // Setting up the MCP23008 I/O expander
+    // assigning I/O direction on the expander
+    uint8_t ADDR = 0x20; // all adress pins grounded
+    char buf[2] = {0x00, 0x7F}; // GP7 out, all others in
+    i2c_write_blocking(I2C_PORT, ADDR, buf, 2, false);
 
     while (true) {
-        printf("Hello, world!\n");
+        // printf("Hello, world!\n");
         cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
         sleep_ms(1000);
         
         cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
         sleep_ms(1000);
+
+        
     }
 }
