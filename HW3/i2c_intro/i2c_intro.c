@@ -56,14 +56,31 @@ int main()
     char onValue = 0x80; // GP7 high
     char offValue = 0x00; // GP7 low
 
+    // assigning gpio button input
+    char buttonReg = 0x09; // GPIO register
+    unsigned int buttonBitpos = 8; // GP0 is the eigth bit in the return
+    unsigned int buttonMask = 0x01; //GP0 is the button input
+
+
     while (true) {
+        char buttonState = readPin(ADDR, buttonReg);
+        buttonState = (buttonState & buttonMask) >> buttonBitpos;
+        if (buttonState) {
+            printf("Button Pressed!\n");
+            setPin(ADDR, outReg, onValue); // turn on LED
+            
+        }
+        else {
+            setPin(ADDR, outReg, offValue); // turn off LED
+        }
+        
         // printf("Hello, world!\n");
         cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
-        setPin(ADDR, outReg, onValue);
+        // setPin(ADDR, outReg, onValue); // Testing LED blink
         sleep_ms(1000);
         
         cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
-        setPin(ADDR, outReg, offValue);
+        //setPin(ADDR, outReg, offValue); Testing LED blink
         sleep_ms(1000);
 
         
