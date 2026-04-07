@@ -11,7 +11,18 @@
 #define I2C_SDA 14
 #define I2C_SCL 15
 
+// General read/write functions for I2C
+void setPin(char address, char reg, char value) {
+    char data[2] = {reg, value};
+    i2c_write_blocking(I2C_PORT, address, data, 2, false);
+}
 
+char readPin(char address, char reg) {
+    char value;
+    i2c_write_blocking(i2c_default, address, &reg, 1, true);  // true to keep host control of bus
+    i2c_read_blocking(i2c_default, address, &value, 1, false);  // false - finished with bus
+    return value;
+}
 
 
 int main()
@@ -36,8 +47,10 @@ int main()
     // Setting up the MCP23008 I/O expander
     // assigning I/O direction on the expander
     uint8_t ADDR = 0x20; // all adress pins grounded
-    char buf[2] = {0x00, 0x7F}; // GP7 out, all others in
-    i2c_write_blocking(I2C_PORT, ADDR, buf, 2, false);
+    char IOdef[2] = {0x00, 0x7F}; // GP7 out, all others in
+    i2c_write_blocking(I2C_PORT, ADDR, IOdef, 2, false);
+
+    // 
 
     while (true) {
         // printf("Hello, world!\n");
