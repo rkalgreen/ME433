@@ -19,8 +19,8 @@ void setPin(char address, char reg, char value) {
 
 char readPin(char address, char reg) {
     char value;
-    i2c_write_blocking(i2c_default, address, &reg, 1, true);  // true to keep host control of bus
-    i2c_read_blocking(i2c_default, address, &value, 1, false);  // false - finished with bus
+    i2c_write_blocking(I2C_PORT, address, &reg, 1, true);  // true to keep host control of bus
+    i2c_read_blocking(I2C_PORT, address, &value, 1, false);  // false - finished with bus
     return value;
 }
 
@@ -61,10 +61,22 @@ int main()
     unsigned int buttonBitpos = 8; // GP0 is the eigth bit in the return
     unsigned int buttonMask = 0x01; //GP0 is the button input
 
+    // while (true) {
+    //     // printf("Hello, world!\n");
+    //     cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
+    //     // setPin(ADDR, outReg, onValue); // Testing LED blink
+    //     sleep_ms(1000);
+        
+    //     cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
+    //     //setPin(ADDR, outReg, offValue); Testing LED blink
+    //     sleep_ms(1000);
+    // }
 
     while (true) {
         char buttonState = readPin(ADDR, buttonReg);
+        printf("Raw button state: %d\n", buttonState);
         buttonState = (buttonState & buttonMask) >> buttonBitpos;
+        printf("Button state: %d\n", buttonState);
         if (buttonState) {
             printf("Button Pressed!\n");
             setPin(ADDR, outReg, onValue); // turn on LED
@@ -73,15 +85,6 @@ int main()
         else {
             setPin(ADDR, outReg, offValue); // turn off LED
         }
-        
-        // printf("Hello, world!\n");
-        cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
-        // setPin(ADDR, outReg, onValue); // Testing LED blink
-        sleep_ms(1000);
-        
-        cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
-        //setPin(ADDR, outReg, offValue); Testing LED blink
-        sleep_ms(1000);
 
         
     }
