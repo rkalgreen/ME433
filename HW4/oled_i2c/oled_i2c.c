@@ -53,7 +53,7 @@ int main()
             heartbeat_counter = 0;
         }
 
-        ssd1306_drawChar(10, 10, '!');
+        ssd1306_drawChar(10, 10, 0x21);
         ssd1306_update();
         sleep_ms(sleep_time_ms);
 
