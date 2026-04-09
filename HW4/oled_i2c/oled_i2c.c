@@ -2,6 +2,7 @@
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
 #include "pico/cyw43_arch.h"
+#include "ssd1306.h"
 
 // I2C defines
 // This example will use I2C0 on GPIO8 (SDA) and GPIO9 (SCL) running at 400KHz.
@@ -37,24 +38,24 @@ int main()
     ssd1306_clear();
 
     // Loop delay
-    uint8_t sleep_time_ms = 1000;
+    uint16_t sleep_time_ms = 1000;
 
     while (true) {
         // onboard heartbeat LED
         static int led_state = 0;
         static int heartbeat_counter = 0;
         heartbeat_counter++;
-        if (heartbeat_counter >= 1000 / sleep_time_ms) {
+        if (heartbeat_counter >= (1000/sleep_time_ms)) {
             led_state = !led_state;
             cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, led_state);
             heartbeat_counter = 0;
         }
 
-        ssd1306_drawPixel(rand() % 128, rand() % 32, 1);
-        ssd1306_update();
+        // ssd1306_drawPixel(10, 10, 1);
+        // ssd1306_update();
 
 
         sleep_ms(sleep_time_ms);
-        ssd1306_clear();
+        // ssd1306_clear();
     }
 }
