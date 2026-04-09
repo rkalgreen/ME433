@@ -36,6 +36,7 @@ int main()
     // Set up the OLED display
     ssd1306_setup();
     ssd1306_clear();
+    ssd1306_update();
 
     // Loop delay
     uint16_t sleep_time_ms = 1000;
@@ -45,17 +46,18 @@ int main()
         static int led_state = 0;
         static int heartbeat_counter = 0;
         heartbeat_counter++;
-        if (heartbeat_counter >= (1000/sleep_time_ms)) {
+        if (heartbeat_counter >= (1000/(2*sleep_time_ms))) {
             led_state = !led_state;
             cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, led_state);
             heartbeat_counter = 0;
         }
 
-        // ssd1306_drawPixel(10, 10, 1);
-        // ssd1306_update();
-
-
+        ssd1306_drawPixel(10, 10, 1);
+        ssd1306_update();
         sleep_ms(sleep_time_ms);
-        // ssd1306_clear();
+
+        ssd1306_clear();
+        ssd1306_update();
+        sleep_ms(sleep_time_ms);
     }
 }
