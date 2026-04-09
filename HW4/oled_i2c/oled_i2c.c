@@ -36,7 +36,16 @@ int main()
     cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
 
     while (true) {
-        printf("Hello, world!\n");
-        sleep_ms(1000);
+        // onboard heartbeat LED
+        static int led_state = 0;
+        static int heartbeat_counter = 0;
+        heartbeat_counter++;
+        if (heartbeat_counter >= 50) {
+            led_state = !led_state;
+            cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, led_state);
+            heartbeat_counter = 0;
+        }
+
+        
     }
 }
