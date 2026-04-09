@@ -120,3 +120,5 @@ void ssd1306_drawChar(unsigned char x, unsigned char y, char c) {
         }
     }
 }
+
+// draw sting of characters from sprintf output
