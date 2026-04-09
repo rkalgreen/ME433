@@ -4,6 +4,7 @@
 #include "ssd1306.h"
 #include "hardware/i2c.h"
 #include "pico/stdlib.h"
+#include "font.h"
 
 #define I2C_PORT i2c1
 #define I2C_SDA 14
@@ -105,3 +106,17 @@ void ssd1306_clear() {
     ssd1306_buffer[0] = 0x40; // first byte is part of command
 }
 
+// draw character
+void ssd1306_drawChar(unsigned char x, unsigned char y, char c) {
+    for (int i = 0; i < 5; i++) { // width of char is 5 pixels
+        unsigned char line = ASCII[c - 0x20][i]; // get the byte for this column of the char
+        for (int j = 0; j < 8; j++) { // height of char is 8 pixels
+            if (line & 0x1) { // check if the least significant bit is a 1 (pixel on)
+                ssd1306_drawPixel(x + i, y + j, 1);
+            } else {
+                ssd1306_drawPixel(x + i, y + j, 0);
+            }
+            line >>= 1; // shift right to get the next bit for the next row of the char
+        }
+    }
+}
