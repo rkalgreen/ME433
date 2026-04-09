@@ -4,6 +4,7 @@
 #include "pico/cyw43_arch.h"
 #include "ssd1306.h"
 #include "font.h"
+#include "hardware/adc.h"
 
 // I2C defines
 // This example will use I2C0 on GPIO8 (SDA) and GPIO9 (SCL) running at 400KHz.
@@ -37,7 +38,7 @@ int main()
     }
 
     // I2C Initialisation. Using it at 400Khz.
-    i2c_init(I2C_PORT, 400*1000);
+    i2c_init(I2C_PORT, 1700*1000);
     
     gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
     gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);
@@ -53,6 +54,10 @@ int main()
     // Loop delay
     uint16_t sleep_time_ms = 500;
 
+    // ADC init
+    adc_init();
+    adc_gpio_init(26);       // GPIO26 = ADC0
+    adc_select_input(0);     // ADC input 0
     
     while (true) {
         // Start FPS counter time
@@ -79,14 +84,14 @@ int main()
 
         t2 = get_absolute_time();
         uint64_t ta;
-        ta = to_us_since_boot(t2) - to_ms_since_boot(t1);
+        ta = to_us_since_boot(t2) - to_us_since_boot(t1);
         char speed[12];
-        sprintf(speed, "FPS= %6.3f", 1000000.0/ta);
+        sprintf(speed, "FPS= %6.3f", 1.0/(ta/1000000.0));
         ssd1306_drawString(0, 24, speed);
 
         char adc0_V[12];
-        sprintf(adc0_V, "V_adc0= %.2f", readPin(0b1000000, 0x42)*0.00488);
-        ssd1306_drawString(13, 24, adc0_V);
+        sprintf(adc0_V, "V_adc0= %.2f", adc_read()*3.3/4095.0);
+        ssd1306_drawString(13*5, 24, adc0_V);
 
         // ssd1306_drawChar(10, 10, 0x21);
         ssd1306_update();
@@ -94,6 +99,6 @@ int main()
 
         // ssd1306_clear();
         // ssd1306_update();
-        sleep_ms(sleep_time_ms);
+        // sleep_ms(sleep_time_ms);
     }
 }

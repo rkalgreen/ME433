@@ -57,6 +57,7 @@ target_include_directories(oled_i2c PRIVATE
 target_link_libraries(oled_i2c 
         hardware_i2c
         pico_cyw43_arch_none
+        hardware_adc
         )
 
 pico_add_extra_outputs(oled_i2c)

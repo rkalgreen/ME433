@@ -126,6 +126,6 @@ void ssd1306_drawString(unsigned char x, unsigned char y, char * str) {
     while (*str) { // loop until null character
         ssd1306_drawChar(x, y, *str);
         str++;
-        x += 6;
+        x += 5;
     }
 }
