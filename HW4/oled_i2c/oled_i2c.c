@@ -32,20 +32,29 @@ int main()
     gpio_pull_up(I2C_SCL);
     // For more examples of I2C use see https://github.com/raspberrypi/pico-examples/tree/master/i2c
 
-    // Example to turn on the Pico W LED
-    cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
+    // Set up the OLED display
+    ssd1306_setup();
+    ssd1306_clear();
+
+    // Loop delay
+    uint8_t sleep_time_ms = 1000;
 
     while (true) {
         // onboard heartbeat LED
         static int led_state = 0;
         static int heartbeat_counter = 0;
         heartbeat_counter++;
-        if (heartbeat_counter >= 50) {
+        if (heartbeat_counter >= 1000 / sleep_time_ms) {
             led_state = !led_state;
             cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, led_state);
             heartbeat_counter = 0;
         }
 
-        
+        ssd1306_drawPixel(rand() % 128, rand() % 32, 1);
+        ssd1306_update();
+
+
+        sleep_ms(sleep_time_ms);
+        ssd1306_clear();
     }
 }
