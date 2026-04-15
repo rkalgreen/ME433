@@ -57,9 +57,17 @@ int main()
     // Check communication with the mpu6050
     char IMU_init =readPin(MPU6050_ADDRESS, WHO_AM_I);
     if (IMU_init == 0x68) {
-        printf("MPU6050 recognized\n");
+        char message[26];
+        sprintf(message, "MPU6050 recognized");
+        ssd1306_drawString(0, 0, message);
+        ssd1306_update();
     } else {
-        printf("MPU6050 not recognized, WHO_AM_I register returned: 0x%X\n", IMU_init);
+        char message[26];
+        sprintf(message, "MPU6050 not recognized");
+        ssd1306_drawString(0, 0, message);
+        sprintf(message, "WHO_AM_I: 0x%X", IMU_init);
+        ssd1306_drawString(0, 10, message);
+        ssd1306_update();
         while (true) {
             cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
             sleep_ms(100);
