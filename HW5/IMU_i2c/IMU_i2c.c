@@ -60,6 +60,11 @@ int main()
             cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, led_state);
             heartbeat_counter = 0;
         }
+
+        
+
+
+
         sleep_ms(100);
     }
 }
