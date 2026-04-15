@@ -100,6 +100,23 @@ void ssd1306_drawPixel(unsigned char x, unsigned char y, unsigned char color) {
     }
 }
 
+// draw horizontal line
+void ssd1306_drawLine_h(unsigned char x0, unsigned char y0, 
+    signed char length, unsigned char color) {
+        for (int i = 0; i < length; i++) {
+            ssd1306_drawPixel(x0 + i, y0, color);
+        }
+    }
+
+// draw vertical line
+void ssd1306_drawLine_v(unsigned char x0, unsigned char y0, 
+    signed char length, unsigned char color) {
+        for (int i = 0; i < length; i++) {
+            ssd1306_drawPixel(x0, y0 + i, color);
+        }
+    }
+
+
 // zero every pixel value
 void ssd1306_clear() {
     memset(ssd1306_buffer, 0, 512); // make every bit a 0, memset in string.h

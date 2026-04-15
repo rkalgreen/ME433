@@ -27,6 +27,10 @@ void ssd1306_setup(void);
 void ssd1306_update(void);
 void ssd1306_clear(void);
 void ssd1306_drawPixel(unsigned char x, unsigned char y, unsigned char color);
+void ssd1306_drawLine_h(unsigned char x0, unsigned char y0, 
+    signed char length, unsigned char color);
+void ssd1306_drawLine_v(unsigned char x0, unsigned char y0, 
+    signed char length, unsigned char color);
 void ssd1306_drawChar(unsigned char x, unsigned char y, char c);
 void ssd1306_drawString(unsigned char x, unsigned char y, char * str);
 

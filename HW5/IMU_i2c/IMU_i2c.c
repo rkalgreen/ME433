@@ -81,6 +81,7 @@ int main()
     mpu6050_setup();
 
     while (true) {
+        ssd1306_clear();
         // onboard heartbeat LED
         static int led_state = 0;
         static int heartbeat_counter = 0;
@@ -122,8 +123,21 @@ int main()
 
         // Display section
         // Line for x axis acceleration
+        int8_t length_x = (int8_t)(accel_x_f * 64); // 128 pixels for the +/- 2g range
+        if (length_x >= 0) {
+            ssd1306_drawLine_h(64, 16, length_x, 1);
+        } else {
+            ssd1306_drawLine_h(64 + length_x, 16, -length_x, 1);
+        }
+        // Line for y axis acceleration
+        int8_t length_y = (int8_t)(accel_y_f * -16); // 32 pixels for the +/- 2g range
+        if (length_y >= 0) {
+            ssd1306_drawLine_v(64, 16, length_y, 1);
+        } else {
+            ssd1306_drawLine_v(64, 16 + length_y, -length_y, 1);
+        }
+        ssd1306_update();
 
-
-        sleep_ms(100);
+        sleep_ms(10);
     }
 }
