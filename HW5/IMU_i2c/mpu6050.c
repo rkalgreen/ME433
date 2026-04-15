@@ -8,3 +8,17 @@
 #define I2C_SCL 15
 
 unsigned char MPU6050_ADDRESS = 0x68; // 7bit i2c address
+
+void mpu6050_setup() {
+    // small delay for power up
+    sleep_ms(20);
+    mpu6050_command(PWR_MGMT_1, 0x00); // turn on chip
+    mpu6050_command(ACCEL_CONFIG, 0xE0); // set accelerometer to +/- 2g, run self test
+    mpu6050_command(GYRO_CONFIG, 0xF8); // set gyro to +/- 2000 dps, run self test
+
+}
+
+void mpu6050_command(char reg, char value) {
+    char data[2] = {reg, value};
+    i2c_write_blocking(I2C_PORT, MPU6050_ADDRESS, data, 2, false);
+}

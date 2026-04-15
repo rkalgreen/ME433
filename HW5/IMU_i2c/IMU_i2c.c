@@ -4,6 +4,7 @@
 #include "pico/cyw43_arch.h"
 #include "ssd1306.h"
 #include "font.h"
+#include "mpu6050.h"
 
 // I2C defines
 // This example will use I2C0 on GPIO8 (SDA) and GPIO9 (SCL) running at 400KHz.
@@ -11,6 +12,9 @@
 #define I2C_PORT i2c1
 #define I2C_SDA 14
 #define I2C_SCL 15
+
+// MPU6050 defines
+#define MPU6050_ADDRESS 0x68 // 7bit i2c address
 
 // General read/write functions for I2C
 void setPin(char address, char reg, char value) {
@@ -50,6 +54,21 @@ int main()
     ssd1306_clear();
     ssd1306_update();
 
+    // Check communication with the mpu6050
+    char IMU_init =readPin(MPU6050_ADDRESS, WHO_AM_I);
+    if (IMU_init == 0x68) {
+        printf("MPU6050 recognized\n");
+    } else {
+        printf("MPU6050 not recognized, WHO_AM_I register returned: 0x%X\n", IMU_init);
+        while (true) {
+            cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
+            sleep_ms(100);
+        }
+    }
+    
+    // Set up the mpu6050
+    mpu6050_setup();
+
     while (true) {
         // onboard heartbeat LED
         static int led_state = 0;
@@ -61,7 +80,7 @@ int main()
             heartbeat_counter = 0;
         }
 
-        
+
 
 
 

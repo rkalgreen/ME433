@@ -28,6 +28,6 @@
 
 // Functions
 void mpu6050_setup(void);
-
+void mpu6050_command(char reg, char value);
 
 #endif
