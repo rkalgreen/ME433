@@ -73,6 +73,9 @@ int main()
             sleep_ms(100);
         }
     }
+    sleep_ms(2000);
+    ssd1306_clear();
+    ssd1306_update();
     
     // Set up the mpu6050
     mpu6050_setup();
@@ -82,16 +85,23 @@ int main()
         static int led_state = 0;
         static int heartbeat_counter = 0;
         heartbeat_counter++;
-        if (heartbeat_counter >= 10) {
+        if (heartbeat_counter >= 50) {
             led_state = !led_state;
             cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, led_state);
             heartbeat_counter = 0;
         }
 
+        // Read accelerometer data
+        short accel_x = mpu6050_readData(ACCEL_XOUT_H)*0.000061;
+        short accel_y = mpu6050_readData(ACCEL_YOUT_H)*0.000061;
+        short accel_z = mpu6050_readData(ACCEL_ZOUT_H)*0.000061;
+        fprintf(stdout, "Accel X: %d\n", accel_x);
+        fprintf(stdout, "Accel Y: %d\n", accel_y);
+        fprintf(stdout, "Accel Z: %d\n", accel_z);
 
 
 
 
-        sleep_ms(100);
+        sleep_ms(10);
     }
 }

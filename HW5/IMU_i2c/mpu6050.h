@@ -28,6 +28,7 @@
 
 // Functions
 void mpu6050_setup(void);
+short mpu6050_readData(char reg);
 void mpu6050_command(char reg, char value);
 
 #endif

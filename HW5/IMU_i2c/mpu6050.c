@@ -18,6 +18,13 @@ void mpu6050_setup() {
 
 }
 
+short mpu6050_readData(char reg) {
+    char data[2];
+    i2c_write_blocking(I2C_PORT, MPU6050_ADDRESS, &reg, 1, true);
+    i2c_read_blocking(I2C_PORT, MPU6050_ADDRESS, data, 2, false);
+    return (short)((data[0] << 8) | data[1]);
+    }
+
 void mpu6050_command(char reg, char value) {
     char data[2] = {reg, value};
     i2c_write_blocking(I2C_PORT, MPU6050_ADDRESS, data, 2, false);
