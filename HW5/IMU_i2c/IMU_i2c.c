@@ -92,16 +92,38 @@ int main()
         }
 
         // Read accelerometer data
-        short accel_x = mpu6050_readData(ACCEL_XOUT_H)*0.000061;
-        short accel_y = mpu6050_readData(ACCEL_YOUT_H)*0.000061;
-        short accel_z = mpu6050_readData(ACCEL_ZOUT_H)*0.000061;
-        fprintf(stdout, "Accel X: %d\n", accel_x);
-        fprintf(stdout, "Accel Y: %d\n", accel_y);
-        fprintf(stdout, "Accel Z: %d\n", accel_z);
+        // float accel_x = (mpu6050_readData(ACCEL_XOUT_H)) * 0.000061;
+        // float accel_y = (mpu6050_readData(ACCEL_YOUT_H)) * 0.000061;
+        // float accel_z = (mpu6050_readData(ACCEL_ZOUT_H)) * 0.000061;
+        
+        // Burst read for all data
+        int16_t accel_x, accel_y, accel_z, temp, gyro_x, gyro_y, gyro_z;
+        mpu6050_readAll(&accel_x, &accel_y, &accel_z, &temp, &gyro_x, &gyro_y, &gyro_z);
+        
+        // convert to real units
+        float accel_x_f = accel_x * 0.000061;
+        float accel_y_f = accel_y * 0.000061;
+        float accel_z_f = accel_z * 0.000061;
+
+        float temp_f = temp / 340.0 + 36.53;
+
+        float gyro_x_f = gyro_x * 0.007630;
+        float gyro_y_f = gyro_y * 0.007630;
+        float gyro_z_f = gyro_z * 0.007630;
+
+        // // test prints
+        // fprintf(stdout, "Accel X: %f\n", accel_x_f);
+        // fprintf(stdout, "Accel Y: %f\n", accel_y);
+        // fprintf(stdout, "Accel Z: %f\n", accel_z);
+        // fprintf(stdout, "Temp: %f\n", temp_f);
+        // fprintf(stdout, "Gyro X: %f\n", gyro_x_f);
+        // fprintf(stdout, "Gyro Y: %f\n", gyro_y_f);
+        // fprintf(stdout, "Gyro Z: %f\n", gyro_z_f);
+
+        // Display section
+        // Line for x axis acceleration
 
 
-
-
-        sleep_ms(10);
+        sleep_ms(100);
     }
 }
