@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
+#include "pico/cyw43_arch.h"
 #include "bsp/board_api.h"
 #include "tusb.h"
 
@@ -57,6 +57,12 @@ int main(void)
 {
   board_init();
 
+  // Initialise the Wi-Fi chip
+    if (cyw43_arch_init()) {
+        printf("Wi-Fi init failed\n");
+        return -1;
+    }
+  
   // init device stack on configured roothub port
   tud_init(BOARD_TUD_RHPORT);
 
@@ -301,6 +307,6 @@ void led_blinking_task(void)
   if ( board_millis() - start_ms < blink_interval_ms) return; // not enough time
   start_ms += blink_interval_ms;
 
-  board_led_write(led_state);
+  cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, led_state);
   led_state = 1 - led_state; // toggle
 }
