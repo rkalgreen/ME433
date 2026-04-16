@@ -37,7 +37,10 @@ pico_sdk_init()
 
 cmake_minimum_required(VERSION 3.13)
 
-add_executable(dev_hid_composite)
+add_executable(dev_hid_composite ssd1306.c mpu6050.c)
+
+# Enable usb output
+# pico_enable_stdio_usb(dev_hid_composite 1)
 
 target_sources(dev_hid_composite PUBLIC
         ${CMAKE_CURRENT_LIST_DIR}/main.c
@@ -52,6 +55,7 @@ target_include_directories(dev_hid_composite PUBLIC
 # for TinyUSB device support and tinyusb_board for the additional board support library used by the example
 target_link_libraries(dev_hid_composite 
         PUBLIC pico_stdlib pico_unique_id tinyusb_device tinyusb_board
+        hardware_i2c
         pico_cyw43_arch_none
         )
 

@@ -26,11 +26,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "hardware/i2c.h"
 #include "pico/cyw43_arch.h"
 #include "bsp/board_api.h"
 #include "tusb.h"
-
+#include "mpu6050.h"
 #include "usb_descriptors.h"
+#include "ssd1306.h"
 
 //--------------------------------------------------------------------+
 // MACRO CONSTANT TYPEDEF PROTYPES
