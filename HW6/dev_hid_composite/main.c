@@ -34,6 +34,27 @@
 #include "usb_descriptors.h"
 #include "ssd1306.h"
 
+// I2C Defines
+#define I2C_PORT i2c1
+#define I2C_SDA 14
+#define I2C_SCL 15
+
+// MPU6050 defines
+#define MPU6050_ADDRESS 0x68 // 7bit i2c address
+
+// General read/write functions for I2C
+void setPin(char address, char reg, char value) {
+    char data[2] = {reg, value};
+    i2c_write_blocking(I2C_PORT, address, data, 2, false);
+}
+
+char readPin(char address, char reg) {
+    char value;
+    i2c_write_blocking(I2C_PORT, address, &reg, 1, true);  // true to keep host control of bus
+    i2c_read_blocking(I2C_PORT, address, &value, 1, false);  // false - finished with bus
+    return value;
+}
+
 //--------------------------------------------------------------------+
 // MACRO CONSTANT TYPEDEF PROTYPES
 //--------------------------------------------------------------------+
@@ -50,6 +71,8 @@ enum  {
 };
 
 static uint32_t blink_interval_ms = BLINK_NOT_MOUNTED;
+static float hid_accel_x = 0.0f;
+static float hid_accel_y = 0.0f;
 
 void led_blinking_task(void);
 void hid_task(void);
@@ -60,10 +83,49 @@ int main(void)
   board_init();
 
   // Initialise the Wi-Fi chip
-    if (cyw43_arch_init()) {
-        printf("Wi-Fi init failed\n");
-        return -1;
-    }
+  if (cyw43_arch_init()) {
+      printf("Wi-Fi init failed\n");
+      return -1;
+  }
+  
+  // I2C Initialisation. Using it at 400Khz.
+  i2c_init(I2C_PORT, 400*1000);
+  
+  gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
+  gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);
+  gpio_pull_up(I2C_SDA);
+  gpio_pull_up(I2C_SCL);
+  
+  // Set up the OLED display
+  ssd1306_setup();
+  ssd1306_clear();
+  ssd1306_update();
+
+  // Check communication with the mpu6050
+  char IMU_init =readPin(MPU6050_ADDRESS, WHO_AM_I);
+  if (IMU_init == 0x68) {
+      char message[26];
+      sprintf(message, "MPU6050 recognized");
+      ssd1306_drawString(0, 0, message);
+      ssd1306_update();
+  } else {
+      char message[26];
+      sprintf(message, "MPU6050 not recognized");
+      ssd1306_drawString(0, 0, message);
+      sprintf(message, "WHO_AM_I: 0x%X", IMU_init);
+      ssd1306_drawString(0, 10, message);
+      ssd1306_update();
+      while (true) {
+          cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
+          sleep_ms(100);
+      }
+  }
+  sleep_ms(2000);
+  ssd1306_clear();
+  ssd1306_update();
+  
+  // Set up the mpu6050
+  mpu6050_setup();
   
   // init device stack on configured roothub port
   tud_init(BOARD_TUD_RHPORT);
@@ -74,8 +136,46 @@ int main(void)
 
   while (1)
   {
+    
     tud_task(); // tinyusb device task
     led_blinking_task();
+    // ssd1306_clear();
+
+    // Burst read for all data
+    int16_t accel_x, accel_y, accel_z, temp, gyro_x, gyro_y, gyro_z;
+    mpu6050_readAll(&accel_x, &accel_y, &accel_z, &temp, &gyro_x, &gyro_y, &gyro_z);
+
+    // convert to real units
+    float accel_x_f = accel_x * 0.000061;
+    float accel_y_f = accel_y * 0.000061;
+    float accel_z_f = accel_z * 0.000061;
+
+    float temp_f = temp / 340.0 + 36.53;
+
+    float gyro_x_f = gyro_x * 0.007630;
+    float gyro_y_f = gyro_y * 0.007630;
+    float gyro_z_f = gyro_z * 0.007630;
+
+    hid_accel_x = accel_x_f;
+    hid_accel_y = accel_y_f;
+
+    // // Display section
+    // // Line for x axis acceleration
+    // int8_t length_x = (int8_t)(accel_x_f * 64); // 128 pixels for the +/- 2g range
+    // if (length_x >= 0) {
+    //     ssd1306_drawLine_h(64, 16, length_x, 1);
+    // } else {
+    //     ssd1306_drawLine_h(64 + length_x, 16, -length_x, 1);
+    // }
+    // // Line for y axis acceleration
+    // int8_t length_y = (int8_t)(accel_y_f * -16); // 32 pixels for the +/- 2g range
+    // if (length_y >= 0) {
+    //     ssd1306_drawLine_v(64, 16, length_y, 1);
+    // } else {
+    //     ssd1306_drawLine_v(64, 16 + length_y, -length_y, 1);
+    // }
+    // ssd1306_update();
+
 
     hid_task();
   }
@@ -146,10 +246,14 @@ static void send_hid_report(uint8_t report_id, uint32_t btn)
 
     case REPORT_ID_MOUSE:
     {
-      int8_t const delta = 5;
+      int8_t delta_x = (int8_t)(hid_accel_x * -64);
+      int8_t delta_y = (int8_t)(hid_accel_y * 64);
+      if (delta_x > 127) delta_x = 127;
+      if (delta_x < -127) delta_x = -127;
+      if (delta_y > 127) delta_y = 127;
+      if (delta_y < -127) delta_y = -127;
 
-      // no button, right + down, no scroll, no pan
-      tud_hid_mouse_report(REPORT_ID_MOUSE, 0x00, delta, delta, 0, 0);
+      tud_hid_mouse_report(REPORT_ID_MOUSE, 0x00, delta_x, delta_y, 0, 0);
     }
     break;
 
