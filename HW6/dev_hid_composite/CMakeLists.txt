@@ -57,6 +57,7 @@ target_link_libraries(dev_hid_composite
         PUBLIC pico_stdlib pico_unique_id tinyusb_device tinyusb_board
         hardware_i2c
         pico_cyw43_arch_none
+        hardware_gpio
         )
 
 # Uncomment this line to enable fix for Errata RP2040-E5 (the fix requires use of GPIO 15)

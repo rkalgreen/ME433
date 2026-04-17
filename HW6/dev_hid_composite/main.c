@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "hardware/i2c.h"
+#include "hardware/gpio.h"
 #include "pico/cyw43_arch.h"
 #include "bsp/board_api.h"
 #include "tusb.h"
@@ -73,6 +74,7 @@ enum  {
 static uint32_t blink_interval_ms = BLINK_NOT_MOUNTED;
 static float hid_accel_x = 0.0f;
 static float hid_accel_y = 0.0f;
+static int mode_toggle = 0;
 
 void led_blinking_task(void);
 void hid_task(void);
@@ -134,13 +136,22 @@ int main(void)
     board_init_after_tusb();
   }
 
+  // Set up gpio for mode toggle button, pull up
+  gpio_init(16);
+  gpio_set_dir(16, GPIO_IN);
+  gpio_pull_up(16);
+  gpio_init(17);
+  gpio_set_dir(17, GPIO_OUT);
+  gpio_put(17, 0);
+
+
   while (1)
   {
     
     tud_task(); // tinyusb device task
     led_blinking_task();
     // ssd1306_clear();
-
+    
     // Burst read for all data
     int16_t accel_x, accel_y, accel_z, temp, gyro_x, gyro_y, gyro_z;
     mpu6050_readAll(&accel_x, &accel_y, &accel_z, &temp, &gyro_x, &gyro_y, &gyro_z);
@@ -175,7 +186,11 @@ int main(void)
     //     ssd1306_drawLine_v(64, 16 + length_y, -length_y, 1);
     // }
     // ssd1306_update();
-
+    if (gpio_get(16) == 0) {
+        mode_toggle = 1 - mode_toggle; // toggle between 0 and 1
+        gpio_put(17, mode_toggle);
+        sleep_ms(300); // debounce delay
+    }
 
     hid_task();
   }
@@ -246,14 +261,33 @@ static void send_hid_report(uint8_t report_id, uint32_t btn)
 
     case REPORT_ID_MOUSE:
     {
-      int8_t delta_x = (int8_t)(hid_accel_x * -64);
-      int8_t delta_y = (int8_t)(hid_accel_y * 64);
-      if (delta_x > 127) delta_x = 127;
-      if (delta_x < -127) delta_x = -127;
-      if (delta_y > 127) delta_y = 127;
-      if (delta_y < -127) delta_y = -127;
+      if (mode_toggle == 0) { // IMU mouse mode
+        int8_t delta_x = (int8_t)(hid_accel_x * -64);
+        int8_t delta_y = (int8_t)(hid_accel_y * 64);
+        if (delta_x > 127) delta_x = 127;
+        if (delta_x < -127) delta_x = -127;
+        if (delta_y > 127) delta_y = 127;
+        if (delta_y < -127) delta_y = -127;
 
-      tud_hid_mouse_report(REPORT_ID_MOUSE, 0x00, delta_x, delta_y, 0, 0);
+        tud_hid_mouse_report(REPORT_ID_MOUSE, 0x00, delta_x, delta_y, 0, 0);
+      } else { // drawing a square
+        static uint8_t pos = 0;
+        uint8_t delta_x = 0;
+        uint8_t delta_y = 0;
+
+        if (pos < 25) {
+          delta_x = 5;
+        } else if (pos < 50) {
+          delta_y = 5;
+        } else if (pos < 75) {
+          delta_x = -5;
+        } else if (pos < 100) {
+          delta_y = -5;
+        }
+        tud_hid_mouse_report(REPORT_ID_MOUSE, 0x00, delta_x, delta_y, 0, 0);
+        pos = (pos + 1) % 100;
+        
+      }
     }
     break;
 
