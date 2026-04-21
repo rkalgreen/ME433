@@ -42,7 +42,7 @@ pico_set_program_version(SDI_waves "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(SDI_waves 0)
-pico_enable_stdio_usb(SDI_waves 0)
+pico_enable_stdio_usb(SDI_waves 1)
 
 # Add the standard library to the build
 target_link_libraries(SDI_waves
@@ -57,6 +57,7 @@ target_include_directories(SDI_waves PRIVATE
 target_link_libraries(SDI_waves 
         hardware_spi
         pico_cyw43_arch_none
+        hardware_gpio
         )
 
 pico_add_extra_outputs(SDI_waves)

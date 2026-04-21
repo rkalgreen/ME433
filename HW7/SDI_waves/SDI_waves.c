@@ -3,18 +3,21 @@
 #include "hardware/spi.h"
 #include "pico/cyw43_arch.h"
 #include <math.h>
+#include "hardware/gpio.h"
 
 // SPI Defines
 // We are going to use SPI 0, and allocate it to the following GPIO pins
 // Pins can be changed, see the GPIO function select table in the datasheet for information on GPIO assignments
-#define SPI_PORT spi0
-#define PIN_MISO 16
-#define PIN_CS   17
-#define PIN_SCK  18
-#define PIN_MOSI 19
+#define SPI_PORT spi1
+#define PIN_MISO 12
+#define PIN_CS   13
+#define PIN_SCK  14
+#define PIN_MOSI 15
 
-
-
+// Forward declarations
+void setDac(int channel, float v);
+// void cs_select(uint pin);
+// void cs_deselect(uint pin);
 
 int main()
 {
@@ -26,7 +29,7 @@ int main()
         return -1;
     }
 
-    // SPI initialisation. This example will use SPI at 1MHz.
+    // SPI initialisation. This example will use SPI at 12kHz.
     spi_init(SPI_PORT, 1000*1000);
     gpio_set_function(PIN_MISO, GPIO_FUNC_SPI);
     gpio_set_function(PIN_CS,   GPIO_FUNC_SIO);
@@ -41,19 +44,42 @@ int main()
     // Example to turn on the Pico W LED
     cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
 
-    uint8_t div = 100;
+    int div = 1000;
     
+    // Generate 2hz sine wave values for DAC output 1
     float vA[div];
     for (int i = 0; i<div; i++) {
-        vA[i] = (sinf(i / div * 2 * M_PI) + 1) / 2 * 3.3;
+        vA[i] = (sinf(i / (float)div * 4 * M_PI) + 1) / 2 * 3.3;
     }
-    
-    uint8_t time = 0;
+
+    // Generate 1hz triangle wave values for DAC output 2
+    float vB[div];
+    for (int i = 0; i<div; i++) {
+        if (i < div/2) {
+            vB[i] = (i / (float)(div/2)) * 3.3;
+        } else {
+            vB[i] = (1 - (i - div/2) / (float)(div/2)) * 3.3;
+        }
+    }
+
+    int time = 0;
 
     while (true) {
+        // onboard heartbeat LED
+        static int led_state = 0;
+        static int heartbeat_counter = 0;
+        heartbeat_counter++;
+        if (heartbeat_counter >= 50) {
+            led_state = !led_state;
+            cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, led_state);
+            heartbeat_counter = 0;
+        }
+
         // update DAC
         setDac(0, vA[time]);
+        setDac(1, vB[time]);
         time = (time + 1) % div;
+        // printf("DAC output: %f V\n", vA[time]);
 
         // Sleep for 10ms
         sleep_ms(1000/div);
@@ -70,7 +96,7 @@ void setDac(int channel, float v){
     data[0] = data[0] | (theV >> 6);
     data[1] = (theV << 2) & 0xFF;
 
-    cs_select(PIN_CS);
+    gpio_put(PIN_CS, 0); 
     spi_write_blocking(SPI_PORT, data, 2);
-    cs_deselect(PIN_CS);
+    gpio_put(PIN_CS, 1);
 }
