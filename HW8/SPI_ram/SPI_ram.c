@@ -39,7 +39,12 @@ int main()
     gpio_set_function(PIN_MOSI, GPIO_FUNC_SPI);
 
     // Set RAM chip to continuous mode
-    
+    uint8_t status[2];
+    status[0] = 0b000001;
+    status[1] = 0b01000000;
+    gpio_put(PIN_CS_RAM, 0); 
+    spi_write_blocking(SPI_PORT, status, 2);
+    gpio_put(PIN_CS_RAM, 1);
     
     // Chip select is active-low, so we'll initialise it to a driven-high state
     gpio_set_dir(PIN_CS_DAC, GPIO_OUT);
