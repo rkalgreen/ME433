@@ -56,6 +56,7 @@ target_include_directories(pygame PRIVATE
 # Add any user requested libraries
 target_link_libraries(pygame 
         pico_cyw43_arch_none
+        hardware_gpio
         )
 
 pico_add_extra_outputs(pygame)

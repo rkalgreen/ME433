@@ -6,7 +6,7 @@ import serial
 from random import randint
 from time import time
 
-ser = serial.Serial('COM6') 
+ser = serial.Serial('COM6', timeout=0.5) 
 print('Opening port: ')
 print(ser.name)
 
@@ -112,9 +112,9 @@ def get_input():
     Currently uses spacebar. 
     To use external GPIO button: read GPIO pin instead.
     """
-    flap_button = ser.readline().decode()
+    flap_button = ser.readline().decode().strip()
 
-    if keyboard.SPACE:
+    if keyboard.SPACE or flap_button == 'FLAP':
         return True
     return False
 

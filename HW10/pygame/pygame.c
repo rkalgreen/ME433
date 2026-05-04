@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "hardware/gpio.h"
 #include "pico/cyw43_arch.h"
 
 
@@ -15,6 +16,11 @@ int main()
         return -1;
     }
 
+    // Set up gpio for mode toggle button, pull up
+    gpio_init(16);
+    gpio_set_dir(16, GPIO_IN);
+    gpio_pull_up(16);
+
     // Example to turn on the Pico W LED
     cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
 
@@ -27,6 +33,12 @@ int main()
             led_state = !led_state;
             cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, led_state);
             heartbeat_counter = 0;
+        }
+
+        if (gpio_get(16) == 0)
+        {
+            printf("FLAP\n");
+            sleep_ms(300); // debounce delay
         }
     }
 }
