@@ -6,7 +6,7 @@ import serial
 from random import randint
 from time import time
 
-ser = serial.Serial('COM6', timeout=0.5) 
+ser = serial.Serial('COM6',115200, timeout=0.5) 
 print('Opening port: ')
 print(ser.name)
 
@@ -60,8 +60,8 @@ class Game:
         })
     
     def update(self):
-        # Check if 2 seconds have passed to start the game
-        if not self.started and time() - self.start_time >= 2:
+        # Check if 1 second has passed to start the game
+        if not self.started and time() - self.start_time >= 1:
             self.started = True
         
         if self.game_over or not self.started:
@@ -106,16 +106,32 @@ game = Game()
 window_centered = False
 
 # INPUT HANDLING - Easy to modify for external button
+last_flap_time = 0
+
 def get_input():
     """
     Check if the player pressed the flap button.
-    Currently uses spacebar. 
-    To use external GPIO button: read GPIO pin instead.
+    Reads from Pico serial port without blocking the game loop.
     """
-    flap_button = ser.readline().decode().strip()
-
-    if keyboard.SPACE or flap_button == 'FLAP':
+    global last_flap_time
+    
+    # Check spacebar
+    if keyboard.SPACE:
         return True
+    
+    # Check serial input from Pico (non-blocking)
+    try:
+        if ser.in_waiting > 0:
+            flap_button = ser.readline().decode().strip()
+            if flap_button == 'FLAP':
+                # # Simple debounce: ignore if we got a flap in the last 100ms
+                # current_time = time()
+                # if current_time - last_flap_time > 0.1:
+                #     last_flap_time = current_time
+                return True
+    except:
+        pass
+    
     return False
 
 def update():
@@ -157,7 +173,7 @@ def draw():
     
     # Draw startup delay message
     if not game.started:
-        time_left = max(0, 2 - (time() - game.start_time))
+        time_left = max(0, 1 - (time() - game.start_time))
         screen.draw.text(f"Get Ready! {time_left:.1f}", (WIDTH//2 - 80, HEIGHT//2), 
                         fontsize=30, color=(0, 0, 0))
     

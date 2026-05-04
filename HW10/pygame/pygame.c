@@ -38,7 +38,7 @@ int main()
         if (gpio_get(16) == 0)
         {
             printf("FLAP\n");
-            sleep_ms(300); // debounce delay
+            sleep_ms(100); // debounce delay
         }
     }
 }
