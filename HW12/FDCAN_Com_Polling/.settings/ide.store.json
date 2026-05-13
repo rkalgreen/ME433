@@ -1,0 +1,10 @@
+{
+  "source": {
+    "sourceType": "Example_stm32cubeide",
+    "sourceId": "FDCAN_Com_Polling"
+  },
+  "device": "STM32C092RCT7",
+  "core": "Cortex-M0+",
+  "order": 0,
+  "toolchain": "GCC"
+}
