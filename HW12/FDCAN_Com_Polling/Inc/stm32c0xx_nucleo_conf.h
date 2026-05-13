@@ -1,8 +1,11 @@
+
 /**
   ******************************************************************************
   * @file    stm32c0xx_nucleo_conf.h
   * @author  MCD Application Team
   * @brief   STM32C0xx_Nucleo board configuration file.
+  *          This file should be copied to the application folder and renamed
+  *          to stm32c0xx_nucleo_conf.h
   ******************************************************************************
   * @attention
   *
@@ -43,12 +46,11 @@ extern "C" {
   * @{
   */
 /* Nucleo pin and part number defines */
-/* #define USE_NUCLEO_48 */
-#define USE_NUCLEO_64
+#define USE_STM32C0XX_NUCLEO
 
 /* COM define */
-#define USE_COM_LOG                         0U
-#define USE_BSP_COM_FEATURE                 0U
+#define USE_COM_LOG                         1U
+#define USE_BSP_COM_FEATURE                 1U
 
 /* IRQ priorities */
 #define BSP_BUTTON_USER_IT_PRIORITY         15U

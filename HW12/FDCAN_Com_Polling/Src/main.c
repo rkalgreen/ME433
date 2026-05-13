@@ -23,6 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdio.h>
 
 /* USER CODE END Includes */
 
@@ -43,6 +44,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+
+COM_InitTypeDef BspCOMInit;
 
 FDCAN_HandleTypeDef hfdcan1;
 
@@ -176,6 +179,21 @@ int main(void)
   }
   /* USER CODE END 2 */
 
+  /* Initialize leds */
+  BSP_LED_Init(LED_GREEN);
+  BSP_LED_Init(LED_BLUE);
+
+  /* Initialize COM1 port (115200, 8 bits (7-bit data + 1 stop bit), no parity */
+  BspCOMInit.BaudRate   = 115200;
+  BspCOMInit.WordLength = COM_WORDLENGTH_8B;
+  BspCOMInit.StopBits   = COM_STOPBITS_1;
+  BspCOMInit.Parity     = COM_PARITY_NONE;
+  BspCOMInit.HwFlowCtl  = COM_HWCONTROL_NONE;
+  if (BSP_COM_Init(COM1, &BspCOMInit) != BSP_ERROR_NONE)
+  {
+    Error_Handler();
+  }
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -191,6 +209,9 @@ int main(void)
     {
       Error_Handler();
     }
+
+    printf("Received! ID: 0x%03X Data: %02X %02X %02X %02X\r\n",
+            rxHeader.Identifier, rxData[0], rxData[1], rxData[2], rxData[3]);
 
     /* Compare received RX message to expected data. Ignore if not matching. */
     if ((rxHeader.Identifier == RX_ID) &&
@@ -296,14 +317,14 @@ static void MX_FDCAN1_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
-/* USER CODE BEGIN MX_GPIO_Init_1 */
-/* USER CODE END MX_GPIO_Init_1 */
+  /* USER CODE BEGIN MX_GPIO_Init_1 */
+  /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
-/* USER CODE BEGIN MX_GPIO_Init_2 */
-/* USER CODE END MX_GPIO_Init_2 */
+  /* USER CODE BEGIN MX_GPIO_Init_2 */
+  /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
@@ -325,6 +346,9 @@ void BSP_PB_Callback(Button_TypeDef Button)
     {
       Error_Handler();
     }
+
+    printf("Sent! ID: 0x%03X Data: %02X %02X %02X %02X\r\n",
+           TX_ID, txData[0], txData[1], txData[2], txData[3]);
 
     /* Delay for simple button debounce */
     HAL_Delay(100U);
@@ -374,8 +398,7 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
-
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.

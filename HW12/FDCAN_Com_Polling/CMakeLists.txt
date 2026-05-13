@@ -1,39 +1,68 @@
-# Set the minimum version of CMake that can be used
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.22)
+
+#
+# This file is generated only once,
+# and is not re-generated if converter is called multiple times.
+#
+# User is free to modify the file as much as necessary
+#
+
+# Setup compiler settings
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS ON)
+
+
+# Define the build type
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Debug")
+endif()
+
+# Set the project name
+set(CMAKE_PROJECT_NAME FDCAN_Com_Polling)
 
 # Enable compile command to ease indexing with e.g. clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
-# Project definition
-project(FDCAN_Com_Polling)
+# Core project settings
+project(${CMAKE_PROJECT_NAME})
+message("Build type: " ${CMAKE_BUILD_TYPE})
 
-# Enable CMake support for ASM and C/CPP languages
+# Enable CMake support for ASM and C languages
 enable_language(C ASM)
 
-set(BUILD_UNIT_0_NAME FDCAN_Com_Polling)
-
 # Create an executable object type
-add_executable(${BUILD_UNIT_0_NAME})
+add_executable(${CMAKE_PROJECT_NAME})
 
-# STM32CubeIDE for Visual Studio Code managed CMake file
-include(cmake/vscode_generated.cmake)
+# Add STM32CubeMX generated sources
+add_subdirectory(cmake/stm32cubemx)
 
-# Compiler options
-target_compile_options(${BUILD_UNIT_0_NAME} PRIVATE
-  # User defined compiler options
+# Link directories setup
+target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
+    # Add user defined library search paths
 )
 
-# Linker options
-target_link_options(${BUILD_UNIT_0_NAME} PRIVATE 
-  # User defined linker options
+# Add sources to executable
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE
+    # Add user sources here
 )
 
-# Add sources to executable/library
-target_sources(${BUILD_UNIT_0_NAME} PRIVATE
-  # User defined sources
+# Add include paths
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
+    # Add user defined include paths
 )
 
-# Add include directories
-target_include_directories(${BUILD_UNIT_0_NAME} PRIVATE
-  # User defined include directories
+# Add project symbols (macros)
+target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
+    # Add user defined symbols
+)
+
+# Remove wrong libob.a library dependency when using cpp files
+list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES ob)
+
+# Add linked libraries
+target_link_libraries(${CMAKE_PROJECT_NAME}
+    stm32cubemx
+
+    # Add user defined libraries
 )

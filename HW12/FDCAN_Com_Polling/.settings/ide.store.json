@@ -1,9 +1,9 @@
 {
   "source": {
-    "sourceType": "Example_stm32cubeide",
-    "sourceId": "FDCAN_Com_Polling"
+    "sourceType": "STM32CubeMX"
   },
-  "device": "STM32C092RCT7",
+  "board": "NUCLEO-C092RC",
+  "device": "STM32C092RCT6",
   "core": "Cortex-M0+",
   "order": 0,
   "toolchain": "GCC"

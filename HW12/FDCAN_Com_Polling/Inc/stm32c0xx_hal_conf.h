@@ -49,7 +49,7 @@ extern "C" {
 /* #define HAL_SMBUS_MODULE_ENABLED   */
 /* #define HAL_SPI_MODULE_ENABLED   */
 /* #define HAL_TIM_MODULE_ENABLED   */
-/* #define HAL_UART_MODULE_ENABLED   */
+#define HAL_UART_MODULE_ENABLED
 /* #define HAL_USART_MODULE_ENABLED   */
 /* #define HAL_WWDG_MODULE_ENABLED   */
 #define HAL_GPIO_MODULE_ENABLED
@@ -248,6 +248,7 @@ in voltage and temperature.*/
 #ifdef HAL_WWDG_MODULE_ENABLED
  #include "stm32c0xx_hal_wwdg.h"
 #endif /* HAL_WWDG_MODULE_ENABLED */
+
 #ifdef HAL_FDCAN_MODULE_ENABLED
 #include "stm32c0xx_hal_fdcan.h"
 #endif /* HAL_FDCAN_MODULE_ENABLED */
@@ -274,5 +275,3 @@ void assert_failed(uint8_t *file, uint32_t line);
 #endif
 
 #endif /* STM32C0xx_HAL_CONF_H */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
