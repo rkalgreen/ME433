@@ -21,7 +21,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "string.h"
+#include <stdio.h>
+#include "stm32c0xx_nucleo.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -41,8 +43,10 @@
 
 /* Private variables ---------------------------------------------------------*/
 
-COM_InitTypeDef BspCOMInit;
 __IO uint32_t BspButtonState = BUTTON_RELEASED;
+
+COM_InitTypeDef BspCOMInit;
+UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 
@@ -51,6 +55,7 @@ __IO uint32_t BspButtonState = BUTTON_RELEASED;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -89,6 +94,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -100,7 +106,7 @@ int main(void)
   /* Initialize USER push-button, will be used to trigger an interrupt each time it's pressed.*/
   BSP_PB_Init(BUTTON_USER, BUTTON_MODE_EXTI);
 
-  /* Initialize COM1 port (115200, 8 bits (7-bit data + 1 stop bit), no parity */
+  /* Initialize COM1 port (115200, 8 bits, 1 stop bit, no parity) */
   BspCOMInit.BaudRate   = 115200;
   BspCOMInit.WordLength = COM_WORDLENGTH_8B;
   BspCOMInit.StopBits   = COM_STOPBITS_1;
@@ -113,10 +119,11 @@ int main(void)
 
   /* USER CODE BEGIN BSP */
 
-  /* -- Sample board code to send message over COM1 port ---- */
-  printf("Welcome to STM32 world !\n\r");
+  /* Print welcome message */
+  printf("\r\n=== STM32 UART Echo Ready ===\r\n");
+  printf("Type something and it will be echoed back...\r\n");
 
-  /* -- Sample board code to switch on leds ---- */
+  /* Switch on leds */
   BSP_LED_On(LED_GREEN);
   BSP_LED_On(LED_BLUE);
 
@@ -126,19 +133,26 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    printf("Hello world !\n\r");
-    HAL_Delay(1000);
-    /* -- Sample board code for User push-button in interrupt mode ---- */
-    if (BspButtonState == BUTTON_PRESSED)
+    uint8_t rx_char;
+    
+    /* Try to receive a character (non-blocking with timeout) */
+    if (HAL_UART_Receive(&huart1, &rx_char, 1, 100) == HAL_OK)
     {
-      /* Update button state */
-      BspButtonState = BUTTON_RELEASED;
-      /* -- Sample board code to toggle leds ---- */
-      BSP_LED_Toggle(LED_GREEN);
-      BSP_LED_Toggle(LED_BLUE);
-
-      /* ..... Perform your action ..... */
+      /* Print received character to serial monitor */
+      printf("%c", rx_char);
+      
+      /* Echo the character back over UART */
+      HAL_UART_Transmit(&huart1, &rx_char, 1, HAL_MAX_DELAY);
+      
+      /* If Enter key, also send newline for proper formatting */
+      if (rx_char == '\r')
+      {
+        printf("\n");
+        uint8_t newline = '\n';
+        HAL_UART_Transmit(&huart1, &newline, 1, HAL_MAX_DELAY);
+      }
     }
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -182,6 +196,54 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief USART1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART1_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART1_Init 0 */
+
+  /* USER CODE END USART1_Init 0 */
+
+  /* USER CODE BEGIN USART1_Init 1 */
+
+  /* USER CODE END USART1_Init 1 */
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 115200;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart1.Init.ClockPrescaler = UART_PRESCALER_DIV1;
+  huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetTxFifoThreshold(&huart1, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetRxFifoThreshold(&huart1, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_DisableFifoMode(&huart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART1_Init 2 */
+
+  /* USER CODE END USART1_Init 2 */
+
 }
 
 /**
