@@ -126,7 +126,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
+    printf("Hello world !\n\r");
+    HAL_Delay(1000);
     /* -- Sample board code for User push-button in interrupt mode ---- */
     if (BspButtonState == BUTTON_PRESSED)
     {
