@@ -72,29 +72,48 @@ int main()
     // Main loop
     while (1) {
         uint8_t rx_char;
+        int usb_char;
+        bool activity = false;
         
-        // Check if data received from USB serial (stdin)
-        if (stdio_usb_connected() && getchar_timeout_us(0) != PICO_ERROR_TIMEOUT) {
-            rx_char = getchar();
+        // Process all available USB characters
+        while (true) {
+            usb_char = getchar_timeout_us(5000);  // Wait 5ms for character
+            if (usb_char == PICO_ERROR_TIMEOUT) {
+                break;
+            }
+            rx_char = (uint8_t)usb_char;
             
-            // Send character from USB serial to STM32
-            uart_putc(UART_ID, rx_char);
-            
-            // Echo back to USB serial for user feedback
-            printf("%c", rx_char);
-            fflush(stdout);
+            // Check for special commands
+            if (rx_char == 't' || rx_char == 'T') {
+                // Send "test\n" over UART
+                uart_puts(UART_ID, "test\n");
+                printf("[Sent: test\\n]\n");
+                fflush(stdout);
+            } else {
+                // Send character from USB serial to UART
+                uart_putc(UART_ID, rx_char);
+                
+                // Echo back to USB serial for user feedback
+                printf("%c", rx_char);
+                fflush(stdout);
+            }
+            activity = true;
         }
         
-        // Check if data received from STM32 over UART
-        if (uart_is_readable(UART_ID)) {
+        // Process all available UART characters
+        while (uart_is_readable(UART_ID)) {
             rx_char = uart_getc(UART_ID);
             
             // Print received character to USB serial monitor
             printf("%c", rx_char);
             fflush(stdout);
+            activity = true;
         }
         
-        sleep_ms(10);  // Small delay to prevent CPU spinning
+        // Small sleep to prevent CPU spinning when idle
+        if (!activity) {
+            sleep_us(100);
+        }
     }
     
     return 0;

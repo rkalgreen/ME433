@@ -120,8 +120,11 @@ int main(void)
   /* USER CODE BEGIN BSP */
 
   /* Print welcome message */
-  printf("\r\n=== STM32 UART Echo Ready ===\r\n");
-  printf("Type something and it will be echoed back...\r\n");
+  printf("\r\n");
+  printf("=== STM32 Bidirectional UART/USB Bridge ===\r\n");
+  printf("USB -> UART and UART -> USB forwarding enabled\r\n");
+  printf("Type in either terminal to see messages in the other\r\n\r\n");
+  fflush(stdout);
 
   /* Switch on leds */
   BSP_LED_On(LED_GREEN);
@@ -135,22 +138,17 @@ int main(void)
   {
     uint8_t rx_char;
     
-    /* Try to receive a character (non-blocking with timeout) */
-    if (HAL_UART_Receive(&huart1, &rx_char, 1, 100) == HAL_OK)
+    /* Forward data from UART1 to USB (printf) - polling mode */
+    if (HAL_UART_Receive(&huart1, &rx_char, 1, 1) == HAL_OK)
     {
-      /* Print received character to serial monitor */
       printf("%c", rx_char);
-      
-      /* Echo the character back over UART */
-      HAL_UART_Transmit(&huart1, &rx_char, 1, HAL_MAX_DELAY);
-      
-      /* If Enter key, also send newline for proper formatting */
-      if (rx_char == '\r')
-      {
-        printf("\n");
-        uint8_t newline = '\n';
-        HAL_UART_Transmit(&huart1, &newline, 1, HAL_MAX_DELAY);
-      }
+      fflush(stdout);
+    }
+    
+    /* Forward data from USB (COM1/USART2) to UART1 */
+    if (HAL_UART_Receive(&hcom_uart[COM1], &rx_char, 1, 1) == HAL_OK)
+    {
+      HAL_UART_Transmit(&huart1, &rx_char, 1, 10);
     }
 
     /* USER CODE END WHILE */
