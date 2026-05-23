@@ -49,7 +49,10 @@ int main()
     }
     
     // IIR filter parameters
-    float alpha = 0.1f;  // Filter coefficient (0 = full average, 1 = no filtering)
+    // alpha controls cutoff: f_c = (alpha * f_s) / (2*pi)
+    // For ~80Hz sampling and 5Hz cutoff: alpha ≈ 0.4
+    // Lower alpha = more filtering (smoother), higher alpha = less filtering
+    float alpha = 0.4f;  // Adjusted to reduce 25-30Hz noise
     int32_t filtered_value = 0;
     uint32_t start_time = time_us_32();
     
