@@ -5,26 +5,12 @@ import matplotlib.pyplot as plt
 # from scipy import signal
 from pathlib import Path
 
-def find_pico_port():
-    """Attempt to find the Pico's COM port"""
-    import sys
-    if sys.platform == 'win32':
-        # Try common COM ports on Windows
-        for port in range(1, 20):
-            try:
-                ser = serial.Serial(f'COM{port}', 115200, timeout=1)
-                ser.close()
-                return f'COM{port}'
-            except:
-                continue
-    return None
-
-def collect_data(port='COM3', num_samples=200):
+def collect_data(port='COM6', num_samples=200):
     """
     Connect to Pico and collect sensor data
     
     Args:
-        port: Serial port (e.g., 'COM3')
+        port: Serial port (e.g., 'COM6')
         num_samples: Number of samples to collect
     
     Returns:
@@ -107,7 +93,7 @@ def compute_fft(signal_data, sample_rate):
     
     return frequencies, magnitudes
 
-def plot_results(times, raw_values, filtered_values, output_dir='HW14'):
+def plot_results(times, raw_values, filtered_values, output_dir='Plots'):
     """Plot and save results"""
     
     # Create output directory if it doesn't exist
@@ -141,8 +127,8 @@ def plot_results(times, raw_values, filtered_values, output_dir='HW14'):
     
     # Plot 2: FFT comparison (linear scale)
     plt.figure(figsize=(12, 6))
-    plt.plot(freqs_raw[:len(freqs_raw)//2], mag_raw[:len(mag_raw)//2], 'b-', label='Raw FFT', linewidth=1)
-    plt.plot(freqs_filt[:len(freqs_filt)//2], mag_filt[:len(mag_filt)//2], 'r-', label='Filtered FFT', linewidth=1)
+    plt.plot(freqs_raw, mag_raw, 'b-', label='Raw FFT', linewidth=1)
+    plt.plot(freqs_filt, mag_filt, 'r-', label='Filtered FFT', linewidth=1)
     plt.axvline(x=25, color='g', linestyle='--', alpha=0.5, label='25-30 Hz noise band')
     plt.axvline(x=30, color='g', linestyle='--', alpha=0.5)
     plt.xlabel('Frequency (Hz)')
@@ -158,8 +144,8 @@ def plot_results(times, raw_values, filtered_values, output_dir='HW14'):
     
     # Plot 3: FFT comparison (log scale for better dynamic range)
     plt.figure(figsize=(12, 6))
-    plt.semilogy(freqs_raw[:len(freqs_raw)//2], mag_raw[:len(mag_raw)//2] + 1e-6, 'b-', label='Raw FFT', linewidth=1)
-    plt.semilogy(freqs_filt[:len(freqs_filt)//2], mag_filt[:len(mag_filt)//2] + 1e-6, 'r-', label='Filtered FFT', linewidth=1)
+    plt.semilogy(freqs_raw, mag_raw + 1e-6, 'b-', label='Raw FFT', linewidth=1)
+    plt.semilogy(freqs_filt, mag_filt + 1e-6, 'r-', label='Filtered FFT', linewidth=1)
     plt.axvline(x=25, color='g', linestyle='--', alpha=0.5, label='25-30 Hz noise band')
     plt.axvline(x=30, color='g', linestyle='--', alpha=0.5)
     plt.xlabel('Frequency (Hz)')
@@ -188,9 +174,7 @@ def main():
     """Main function"""
     try:
         # Try to find port automatically
-        port = find_pico_port()
-        if not port:
-            port = 'COM3'  # Default to COM3
+        port = 'COM6'  # Default to COM6
         
         print(f"Using port: {port}")
         
@@ -199,14 +183,15 @@ def main():
         times, raw_values, filtered_values = collect_data(port, num_samples)
         
         # Plot results
-        plot_results(times, raw_values, filtered_values, output_dir='HW14')
+        plot_results(times, raw_values, filtered_values, output_dir='Plots')
         
-        print("\n✓ Analysis complete! Check HW14/ folder for images.")
+        print("\n✓ Analysis complete! Check Plots/ folder for images.")
         
     except Exception as e:
         print(f"Error: {e}")
-        print("Make sure the Pico is connected and try specifying the port manually:")
-        print("  times, raw, filt = collect_data('COM3', 300)")
+        print("Make sure the Pico is connected to COM6")
+        import traceback
+        traceback.print_exc()
 
 if __name__ == '__main__':
     main()

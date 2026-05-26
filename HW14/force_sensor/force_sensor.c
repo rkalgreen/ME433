@@ -33,56 +33,63 @@ int main()
     }
 
     HX711_init();
-    printf("HX711 initialized. Enter number of samples to collect: ");
-    fflush(stdout);
     
-    // Wait for user input
-    int num_samples = 0;
-    scanf("%d", &num_samples);
-    printf("Collecting %d samples...\n", num_samples);
-    
-    // Allocate memory for samples
-    Sample *samples = (Sample *)malloc(num_samples * sizeof(Sample));
-    if (samples == NULL) {
-        printf("Memory allocation failed\n");
-        return -1;
-    }
-    
-    // IIR filter parameters
-    // alpha controls cutoff: f_c = (alpha * f_s) / (2*pi)
-    // For ~80Hz sampling and 5Hz cutoff: alpha ≈ 0.4
-    // Lower alpha = more filtering (smoother), higher alpha = less filtering
-    float alpha = 0.4f;  // Adjusted to reduce 25-30Hz noise
-    int32_t filtered_value = 0;
-    uint32_t start_time = time_us_32();
-    
-    // Collect samples
-    for (int i = 0; i < num_samples; i++) {
-        int32_t raw = HX711_read();
+    // Main loop - allow multiple data collections
+    while (true) {
+        printf("\nEnter number of samples to collect (0 to exit): ");
+        fflush(stdout);
         
-        // Apply IIR filter: filtered = alpha * raw + (1 - alpha) * prev_filtered
-        filtered_value = (int32_t)(alpha * raw + (1.0f - alpha) * filtered_value);
+        // Wait for user input
+        int num_samples = 0;
+        scanf("%d", &num_samples);
         
-        // Calculate timestamp in milliseconds
-        uint32_t elapsed_us = time_us_32() - start_time;
-        uint32_t timestamp_ms = elapsed_us / 1000;
+        if (num_samples <= 0) {
+            printf("Exiting...\n");
+            break;
+        }
         
-        // Store sample
-        samples[i].raw = raw;
-        samples[i].filtered = filtered_value;
-        samples[i].timestamp_ms = timestamp_ms;
+        printf("Collecting %d samples...\n", num_samples);
+        
+        // Allocate memory for samples
+        Sample *samples = (Sample *)malloc(num_samples * sizeof(Sample));
+        if (samples == NULL) {
+            printf("Memory allocation failed\n");
+            continue;
+        }
+        
+        // IIR filter parameters
+        float alpha = 0.4f;  // Adjusted to reduce 25-30Hz noise
+        int32_t filtered_value = 0;
+        uint32_t start_time = time_us_32();
+        
+        // Collect samples
+        for (int i = 0; i < num_samples; i++) {
+            int32_t raw = HX711_read();
+            
+            // Apply IIR filter: filtered = alpha * raw + (1 - alpha) * prev_filtered
+            filtered_value = (int32_t)(alpha * raw + (1.0f - alpha) * filtered_value);
+            
+            // Calculate timestamp in milliseconds
+            uint32_t elapsed_us = time_us_32() - start_time;
+            uint32_t timestamp_ms = elapsed_us / 1000;
+            
+            // Store sample
+            samples[i].raw = raw;
+            samples[i].filtered = filtered_value;
+            samples[i].timestamp_ms = timestamp_ms;
+        }
+        
+        // Print all collected data
+        printf("\n=== Collected Data ===\n");
+        printf("Sample\tTime(ms)\tRaw\t\tFiltered\n");
+        printf("------\t--------\t--------\t--------\n");
+        for (int i = 0; i < num_samples; i++) {
+            printf("%d\t%u\t%d\t%d\n", i, samples[i].timestamp_ms, samples[i].raw, samples[i].filtered);
+        }
+        
+        // Free allocated memory
+        free(samples);
     }
-    
-    // Print all collected data
-    printf("\n=== Collected Data ===\n");
-    printf("Sample\tTime(ms)\tRaw\t\tFiltered\n");
-    printf("------\t--------\t--------\t--------\n");
-    for (int i = 0; i < num_samples; i++) {
-        printf("%d\t%u\t%d\t%d\n", i, samples[i].timestamp_ms, samples[i].raw, samples[i].filtered);
-    }
-    
-    // Free allocated memory
-    free(samples);
     
     // Heartbeat LED
     while (true) {
